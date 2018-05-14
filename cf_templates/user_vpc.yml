@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Creates a subnet of arbitrary size connected to a given base VPC
+Parameters:
+  SubnetName:
+    Description: The name (tag) of the subnet
+    Type: String
+  SubnetSuffix:
+    Description: The VPC subnet suffix (e.g. 0.2/8)
+    Type: String
+  SubnetZone:
+    Description: Availability zone for subnet
+    Type: String
+    AllowedValues:
+      - us-east-1a
+      - us-east-1b
+      - us-east-1c
+      - us-east-1d
+    Default: us-east-1a
+  SubnetType:
+    Description: Type of the subnet (public or private)
+    Type: String
+    AllowedValues:
+      - public
+      - private
+Conditions:
+  PublicSubnetType: !Equals [public, !Ref SubnetType]
+  PrivateSubnetType: !Equals [private, !Ref SubnetType]
+  
+Resources:
+  PublicSubnet:
+    Type: "AWS::EC2::Subnet"
+    Condition: PublicSubnetType
+    Properties:
+      MapPublicIpOnLaunch: true
+      VpcId: !ImportValue us-east-1-computevpc-base-VPCId
+      CidrBlock: !Join [".", [!ImportValue us-east-1-computevpc-base-VpcSubnetPrefix, !Ref SubnetSuffix]]
+      AvailabilityZone: !Ref SubnetZone
+      Tags:
+        -
+          Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        -
+          Key: "Network"
+          Value: "Public"
+        -
+          Key: "Name"
+          Value: !Ref SubnetName
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Condition: PublicSubnetType
+    Properties:
+      VpcId: !ImportValue us-east-1-computevpc-base-VPCId
+      Tags:
+        -
+          Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        -
+          Key: "Network"
+          Value: "Public"
+        -
+          Key: "Name"
+          Value: !Join ["-", [!Ref SubnetName, "RouteTable"]]
+  PublicRoute:
+    Type: "AWS::EC2::Route"
+    Condition: PublicSubnetType
+    Properties:
+      RouteTableId:
+        Ref: "PublicRouteTable"
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !ImportValue us-east-1-computevpc-base-InternetGateway
+  PublicSubnetRouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Condition: PublicSubnetType
+    Properties:
+      SubnetId:
+        Ref: "PublicSubnet"
+      RouteTableId:
+        Ref: "PublicRouteTable"
+  PublicNetworkAcl:
+    Type: "AWS::EC2::NetworkAcl"
+    Condition: PublicSubnetType
+    Properties:
+      VpcId: !ImportValue us-east-1-computevpc-base-VPCId
+      Tags:
+        -
+          Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        -
+          Key: "Network"
+          Value: "Public"
+        -
+          Key: "Name"
+          Value: !Join ["-", [!Ref SubnetName, "NetworkAcl"]]
+  InboundHTTPPublicNetworkAclEntry:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: PublicSubnetType
+    Properties:
+      NetworkAclId:
+        Ref: "PublicNetworkAcl"
+      RuleNumber: "100"
+      Protocol: "-1"
+      RuleAction: "allow"
+      Egress: "false"
+      CidrBlock: "0.0.0.0/0"
+      PortRange:
+        From: "0"
+        To: "65535"
+  OutboundPublicNetworkAclEntry:
+    Type: "AWS::EC2::NetworkAclEntry"
+    Condition: PublicSubnetType
+    Properties:
+      NetworkAclId:
+        Ref: "PublicNetworkAcl"
+      RuleNumber: "100"
+      Protocol: "-1"
+      RuleAction: "allow"
+      Egress: "true"
+      CidrBlock: "0.0.0.0/0"
+      PortRange:
+        From: "0"
+        To: "65535"
+  PublicSubnetNetworkAclAssociation:
+    Type: "AWS::EC2::SubnetNetworkAclAssociation"
+    Condition: PublicSubnetType
+    Properties:
+      SubnetId:
+        Ref: "PublicSubnet"
+      NetworkAclId:
+        Ref: "PublicNetworkAcl"
+
+  PrivateSubnet:
+    Type: "AWS::EC2::Subnet"
+    Condition: PrivateSubnetType
+    Properties:
+      VpcId: !ImportValue us-east-1-computevpc-base-VPCId
+      CidrBlock: !Join [".", [!ImportValue us-east-1-computevpc-base-VpcSubnetPrefix, !Ref SubnetSuffix]]
+      AvailabilityZone: !Ref SubnetZone
+      Tags:
+        -
+          Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        -
+          Key: "Network"
+          Value: "Private"
+        -
+          Key: "Name"
+          Value: !Ref SubnetName
+  PrivateRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Condition: PrivateSubnetType
+    Properties:
+      VpcId: !ImportValue us-east-1-computevpc-base-VPCId
+      Tags:
+        -
+          Key: "Application"
+          Value:
+            Ref: "AWS::StackName"
+        -
+          Key: "Network"
+          Value: "Private"
+        -
+          Key: "Name"
+          Value: !Join ["-", [!Ref SubnetName, "RouteTable"]]
+  PrivateRouteToInternet:
+    Type: "AWS::EC2::Route"
+    Condition: PrivateSubnetType
+    Properties:
+      RouteTableId:
+        Ref: "PrivateRouteTable"
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !ImportValue us-east-1-computevpc-base-NatGateway
+  PrivateSubnetRouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Condition: PrivateSubnetType
+    Properties:
+      SubnetId:
+        Ref: "PrivateSubnet"
+      RouteTableId:
+        Ref: "PrivateRouteTable"
