@@ -2,7 +2,7 @@
 template_path: templates/managed-ec2.yaml
 stack_name: mpower2-user-add
 dependencies:
-  - peer-vpn-sandcastlevpc
+  - peer-vpn-computevpc
 parameters:
   # The Sage deparment for this resource
   Department: "Systems Biology"
