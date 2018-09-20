@@ -19,5 +19,5 @@ parameters:
   JcServiceApiKey: !ssm /infra/JcServiceApiKey
   JcSystemsGroupId: !ssm /infra/JcSystemsGroupId
 hooks:
-  after_create:
+  after_update:
     - !notify_ec2
