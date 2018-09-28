@@ -12,12 +12,7 @@ parameters:
   OwnerEmail: "kenneth.daily@sagebase.org"
   # EC2 instance type (available types https://aws.amazon.com/ec2/instance-types/)
   InstanceType: "t2.micro"
-  # Name of an existing VPC subnet to run the instance in
-  VpcSubnet: "PrivateSubnet"
-  # Name of an existing EC2 KeyPair to enable SSH access to the instance
-  KeyName: "test-ki-rally-manager"
-
-   # Integration with our jumpcloud directory service (do not change)
+  # Integration with our jumpcloud directory service (do not change)
   JcConnectKey: !ssm /infra/JcConnectKey
   JcServiceApiKey: !ssm /infra/JcServiceApiKey
   JcSystemsGroupId: !ssm /infra/JcSystemsGroupId
