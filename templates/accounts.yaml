@@ -96,7 +96,7 @@ Resources:
           - iam:ListInstanceProfiles
           - iam:ListRoles
           Resource:
-          - genie-job-*
+          - arn:aws:batch:us-east-1:055273631518:job-definition/genie-job*
         - Effect: Allow
           Action:
           - iam:PassRole
