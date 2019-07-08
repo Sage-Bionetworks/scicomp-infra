@@ -177,6 +177,7 @@ Resources:
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess
         - !Ref AWSIAMEnforceMfaPolicy
   AWSIAMBillingManagersGroup:
     Type: 'AWS::IAM::Group'
