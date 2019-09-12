@@ -189,6 +189,7 @@ Resources:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
         - !Ref AWSIAMEnforceMfaPolicy
         - !Ref AWSViewReportsPolicy
+        - !Ref AWSSupportPolicy
   AWSIAMResourceGroupsUsersGroup:
     Type: 'AWS::IAM::Group'
     Properties:
