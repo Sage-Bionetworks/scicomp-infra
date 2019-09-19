@@ -117,6 +117,25 @@ Resources:
             Action:
               - "sts:AssumeRole"
       Path: "/"
+  AWSCapacityReservationRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS:
+                - !GetAtt AWSIAMTessThyer.Arn
+            Action:
+              - ec2:CancelCapacityReservation
+              - ec2:CreateCapacityReservation
+              - ec2:DescribeCapacityReservations
+              - ec2:GetCapacityReservationUsage
+              - ec2:ModifyCapacityReservation
+              - ec2:ModifyInstanceCapacityReservationAttributes
+            Resource: '*'
   AWSIAMCreateAmiPolicy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
