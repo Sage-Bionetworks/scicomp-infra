@@ -1,3 +1,6 @@
+# This repo has been moved to https://github.com/Sage-Bionetworks-IT/organizations-infra/tree/master/sceptre/scicomp
+
+
 # Overview
 Install, configure and manage the AWS org-sagebase-scicomp account.
 This account is used to run production workloads for scientists.
